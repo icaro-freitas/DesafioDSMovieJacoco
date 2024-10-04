@@ -25,6 +25,8 @@ import com.devsuperior.dsmovie.repositories.MovieRepository;
 import com.devsuperior.dsmovie.services.exceptions.ResourceNotFoundException;
 import com.devsuperior.dsmovie.tests.MovieFactory;
 
+import jakarta.persistence.EntityNotFoundException;
+
 @ExtendWith(SpringExtension.class)
 public class MovieServiceTests {
 
@@ -36,15 +38,17 @@ public class MovieServiceTests {
 
 	private Long existingId;
 	private Long nonExistingId;
+	private Long dependentId;
 	private MovieEntity movie;
 	private MovieDTO movieDTO;
 	private PageImpl<MovieEntity> page;
 
 	@BeforeEach
 	void setUp() throws Exception {
-		
+
 		existingId = 1L;
-		nonExistingId = 2L;		
+		nonExistingId = 2L;
+		dependentId = 3L;
 
 		movie = MovieFactory.createMovieEntity();
 		movieDTO = MovieFactory.createMovieDTO();
@@ -54,6 +58,16 @@ public class MovieServiceTests {
 
 		Mockito.when(repository.findById(existingId)).thenReturn(Optional.of(movie));
 		Mockito.when(repository.findById(nonExistingId)).thenReturn(Optional.empty());
+
+		Mockito.when(repository.save(ArgumentMatchers.any())).thenReturn(movie);
+		
+		Mockito.when(repository.getReferenceById(existingId)).thenReturn(movie);
+		Mockito.when(repository.getReferenceById(nonExistingId)).thenThrow(EntityNotFoundException.class);
+
+
+		Mockito.when(repository.existsById(existingId)).thenReturn(true);
+		Mockito.when(repository.existsById(nonExistingId)).thenReturn(false);
+		Mockito.when(repository.existsById(dependentId)).thenReturn(true);
 	}
 
 	@Test
@@ -82,6 +96,9 @@ public class MovieServiceTests {
 
 	@Test
 	public void insertShouldReturnMovieDTO() {
+		MovieDTO result = service.insert(movieDTO);
+
+		Assertions.assertNotNull(result);
 	}
 
 	@Test
