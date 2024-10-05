@@ -55,21 +55,21 @@ public class ScoreServiceTests {
 		movie = MovieFactory.createMovieEntity();
 		score = ScoreFactory.createScoreEntity();
 		movie.getScores().add(score);
-		scoreDTO = ScoreFactory.createScoreDTO();		
-		
+		scoreDTO = ScoreFactory.createScoreDTO();
+
 		Mockito.when(userService.authenticated()).thenReturn(authUser);
-		
+
 		Mockito.when(movieRepository.findById(existingId)).thenReturn(Optional.of(movie));
 		Mockito.when(movieRepository.findById(nonExistingId)).thenReturn(Optional.empty());
-		
+
 		Mockito.when(repository.saveAndFlush(ArgumentMatchers.any())).thenReturn(score);
-		
+
 		Mockito.when(movieRepository.save(ArgumentMatchers.any())).thenReturn(movie);
 	}
 
 	@Test
 	public void saveScoreShouldReturnMovieDTO() {
-		
+
 		MovieDTO result = service.saveScore(scoreDTO);
 
 		Assertions.assertNotNull(result);
@@ -79,9 +79,9 @@ public class ScoreServiceTests {
 	public void saveScoreShouldThrowResourceNotFoundExceptionWhenNonExistingMovieId() {
 		movie.setId(nonExistingId);
 		score.setMovie(movie);
-		
+
 		ScoreDTO scoreDTOWithNonExistingMovieId = new ScoreDTO(score);
-		
+
 		Assertions.assertThrows(ResourceNotFoundException.class, () -> {
 			service.saveScore(scoreDTOWithNonExistingMovieId);
 		});
